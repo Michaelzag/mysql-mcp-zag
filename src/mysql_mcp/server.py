@@ -1,6 +1,7 @@
 """Modern MySQL MCP Server using FastMCP."""
 
 import os
+import re
 from typing import Any
 
 from fastmcp import FastMCP
@@ -37,6 +38,44 @@ def get_db_config() -> dict[str, Any]:
         )
 
     return config
+
+
+def validate_table_name(table_name: str) -> bool:
+    """Validate that a table name is safe to use in SQL queries.
+    
+    Args:
+        table_name: The table name to validate
+        
+    Returns:
+        True if the table name is valid, False otherwise
+    """
+    # MySQL table names can contain letters, numbers, underscores, and dollar signs
+    # They cannot start with a number and have length limits
+    if not table_name or len(table_name) > 64:
+        return False
+    
+    # Check for valid MySQL identifier pattern
+    pattern = r'^[a-zA-Z_$][a-zA-Z0-9_$]*$'
+    return bool(re.match(pattern, table_name))
+
+
+def table_exists(table_name: str, config: dict[str, Any]) -> bool:
+    """Check if a table exists in the database.
+    
+    Args:
+        table_name: The table name to check
+        config: Database configuration
+        
+    Returns:
+        True if the table exists, False otherwise
+    """
+    try:
+        with connect(**config) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SHOW TABLES LIKE %s", (table_name,))
+                return cursor.fetchone() is not None
+    except Error:
+        return False
 
 
 # Create the FastMCP server
@@ -151,13 +190,21 @@ Args:
 Returns:
         Table structure and information
     """
+    # Validate table name to prevent SQL injection
+    if not validate_table_name(table):
+        return f"Invalid table name: '{table}'. Table names must contain only letters, numbers, underscores, and dollar signs."
+    
     config = get_db_config()
+    
+    # Check if table exists before proceeding
+    if not table_exists(table, config):
+        return f"Table '{table}' not found in the database."
 
     try:
         with connect(**config) as conn:
             with conn.cursor() as cursor:
-                # Get table structure
-                cursor.execute(f"DESCRIBE `{table}`")
+                # Get table structure - now safe since we validated the table name
+                cursor.execute(f"DESCRIBE `{table}`")  # nosec B608
                 columns = cursor.fetchall()
 
                 if not columns:
@@ -177,8 +224,8 @@ Returns:
                     col_info = f"{null_str}{key_str}{default_str}{extra_str}"
                     result.append(f"  - {field!s}: {type_!s} {col_info}")
 
-                # Get row count
-                cursor.execute(f"SELECT COUNT(*) FROM `{table}`")
+                # Get row count - now safe since we validated the table name
+                cursor.execute(f"SELECT COUNT(*) FROM `{table}`")  # nosec B608
                 count_result = cursor.fetchone()
                 row_count = count_result[0] if count_result else 0  # type: ignore
                 result.extend(["", f"Total rows: {row_count!s}"])
