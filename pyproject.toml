@@ -28,10 +28,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/mysql-mcp"
-Repository = "https://github.com/yourusername/mysql-mcp"
-Issues = "https://github.com/yourusername/mysql-mcp/issues"
-Documentation = "https://github.com/yourusername/mysql-mcp#readme"
+Homepage = "https://github.com/MichaelZag/mysql_mcp"
+Repository = "https://github.com/MichaelZag/mysql_mcp"
+Issues = "https://github.com/MichaelZag/mysql_mcp/issues"
+Documentation = "https://github.com/MichaelZag/mysql_mcp#readme"
 
 [project.scripts]
 mysql-mcp = "mysql_mcp.server:main"
