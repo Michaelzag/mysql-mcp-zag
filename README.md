@@ -12,7 +12,21 @@ A modern MySQL Model Context Protocol (MCP) server built with FastMCP.
 
 ## Installation
 
+### Using uvx (Recommended)
+
+The easiest way to use MySQL MCP Server is with `uvx`:
+
 ```bash
+uvx mysql-mcp-zag
+```
+
+### From Source (Alternative)
+
+If you prefer to install from source:
+
+```bash
+git clone https://github.com/MichaelZag/mysql_mcp.git
+cd mysql_mcp
 uv sync
 ```
 
@@ -38,12 +52,33 @@ export MYSQL_CHARSET=utf8mb4
 
 Configure in your MCP client (e.g., Claude Desktop):
 
+#### Using uvx (Recommended)
+
+```json
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "uvx",
+      "args": ["mysql-mcp-zag"],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_USER": "user",
+        "MYSQL_PASSWORD": "password",
+        "MYSQL_DATABASE": "database"
+      }
+    }
+  }
+}
+```
+
+#### Using local installation
+
 ```json
 {
   "mcpServers": {
     "mysql": {
       "command": "uv",
-      "args": ["--directory", "/path/to/mysql-mcp", "run", "mysql_mcp_server"],
+      "args": ["--directory", "/path/to/mysql-mcp", "run", "mysql-mcp"],
       "env": {
         "MYSQL_HOST": "localhost",
         "MYSQL_USER": "user",
@@ -57,8 +92,16 @@ Configure in your MCP client (e.g., Claude Desktop):
 
 ### Direct Usage
 
+#### Using uvx
+
 ```bash
-uv run mysql_mcp_server
+uvx mysql-mcp-zag
+```
+
+#### Using local installation
+
+```bash
+uv run mysql-mcp
 ```
 
 ## Available Tools
@@ -82,7 +125,7 @@ uv run black src tests
 uv run mypy src
 
 # Run server locally
-uv run mysql_mcp_server
+uv run mysql-mcp
 ```
 
 ## Requirements
