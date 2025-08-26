@@ -8,71 +8,44 @@ A modern MySQL Model Context Protocol (MCP) server built with FastMCP.
 - Browse database tables and structure via MCP resources
 - SSL certificate support
 - Connection pooling and error handling
-- Full type safety with Python 3.13+
-
-## Installation
-
-### Using uvx (Recommended)
-
-The easiest way to use MySQL MCP Server is with `uvx`:
-
-```bash
-uvx mysql-mcp-zag
-```
-
-### From Source (Alternative)
-
-If you prefer to install from source:
-
-```bash
-git clone https://github.com/Michaelzag/mysql-mcp-zag.git
-cd mysql-mcp-zag
-uv sync
-```
 
 ## Configuration
 
-The MySQL MCP server accepts the following command line arguments:
+### Command Line Arguments
 
-### Required Arguments
-- `--user`: MySQL username
-- `--password`: MySQL password
-- `--database`: MySQL database name
+#### Required Arguments
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `--user` | MySQL username | **(required)** |
+| `--password` | MySQL password | **(required)** |
+| `--database` | MySQL database name | **(required)** |
 
-### Optional Arguments
-- `--host`: MySQL server host (default: localhost)
-- `--port`: MySQL server port (default: 3306)
-- `--ssl-ca`: Path to SSL CA certificate file
-- `--ssl-cert`: Path to SSL client certificate file
-- `--ssl-key`: Path to SSL client private key file
-- `--ssl-disabled`: Disable SSL connection
-- `--charset`: Character set (default: utf8mb4)
-- `--collation`: Collation (default: utf8mb4_unicode_ci)
-- `--sql-mode`: SQL mode (default: TRADITIONAL)
+#### Database Connection (Optional)
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `--host` | MySQL server host | `localhost` |
+| `--port` | MySQL server port | `3306` |
 
-### SSL Configuration Examples
+#### SSL Configuration (Optional)
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `--ssl-ca` | Path to SSL CA certificate file | *(none - SSL auto-negotiated)* |
+| `--ssl-cert` | Path to SSL client certificate file | *(none)* |
+| `--ssl-key` | Path to SSL client private key file | *(none)* |
+| `--ssl-disabled` | Disable SSL connection entirely | `false` |
 
-```bash
-# Basic SSL with CA certificate
-uvx mysql-mcp-zag --user admin --password secret --database mydb --ssl-ca /path/to/ca.pem
+**Note:** If `--ssl-cert` is provided, `--ssl-key` must also be provided, and vice versa.
 
-# Full SSL with client certificates
-uvx mysql-mcp-zag --user admin --password secret --database mydb \
-  --ssl-ca /path/to/ca.pem \
-  --ssl-cert /path/to/client-cert.pem \
-  --ssl-key /path/to/client-key.pem
-
-# Disable SSL entirely
-uvx mysql-mcp-zag --user admin --password secret --database mydb --ssl-disabled
-```
+#### Advanced Options (Optional)
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `--charset` | Character set for the connection | `utf8mb4` |
+| `--collation` | Collation for the connection | `utf8mb4_unicode_ci` |
+| `--sql-mode` | MySQL SQL mode | `TRADITIONAL` |
 
 ## Usage
 
-### As MCP Server
-
-Configure in your MCP client (e.g., Claude Desktop):
-
-#### Using uvx (Recommended)
+#### Simple Configuration
 
 ```json
 {
@@ -82,6 +55,7 @@ Configure in your MCP client (e.g., Claude Desktop):
       "args": [
         "mysql-mcp-zag",
         "--host", "localhost",
+        "--port", "3306",
         "--user", "your_user",
         "--password", "your_password",
         "--database", "your_database"
@@ -91,38 +65,25 @@ Configure in your MCP client (e.g., Claude Desktop):
 }
 ```
 
-#### Using local installation
+#### Complex Configuration
 
 ```json
 {
   "mcpServers": {
     "mysql": {
-      "command": "uv",
+      "command": "uvx",
       "args": [
-        "--directory", "/path/to/mysql-mcp",
-        "run", "mysql-mcp",
-        "--host", "localhost",
+        "mysql-mcp-zag",
+        "--host", "your-remote-host.com",
+        "--port", "25060",
         "--user", "your_user",
         "--password", "your_password",
-        "--database", "your_database"
+        "--database", "your_database",
+        "--ssl-ca", "/path/to/ca-certificate.pem"
       ]
     }
   }
 }
-```
-
-### Direct Usage
-
-#### Using uvx
-
-```bash
-uvx mysql-mcp-zag --user your_user --password your_password --database your_database
-```
-
-#### Using local installation
-
-```bash
-uv run mysql-mcp --user your_user --password your_password --database your_database
 ```
 
 ## Available Tools
@@ -134,26 +95,12 @@ uv run mysql-mcp --user your_user --password your_password --database your_datab
 - `mysql://tables`: List all tables
 - `mysql://tables/{table}`: Describe table structure
 
-## Development
-
-```bash
-# Run tests
-uv run pytest
-
-# Lint and format
-uv run ruff check --fix src tests
-uv run black src tests
-uv run mypy src
-
-# Run server locally
-uv run mysql-mcp --user your_user --password your_password --database your_database
-```
 
 ## Requirements
 
 - Python 3.13+
 - MySQL server
-- UV package manager
+- uvx (for installation and usage)
 
 ---
 
