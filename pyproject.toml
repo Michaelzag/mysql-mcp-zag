@@ -34,7 +34,7 @@ Issues = "https://github.com/Michaelzag/mysql-mcp-zag/issues"
 Documentation = "https://github.com/Michaelzag/mysql-mcp-zag#readme"
 
 [project.scripts]
-mysql-mcp = "mysql_mcp.server:main"
+mysql-mcp-zag = "mysql_mcp.server:main"
 
 [dependency-groups]
 dev = [
