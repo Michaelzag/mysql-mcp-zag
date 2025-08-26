@@ -8,24 +8,26 @@ from fastmcp import Client
 from mcp.types import TextResourceContents
 from mysql.connector import Error
 
-from mysql_mcp.server import get_db_config, mcp
+from mysql_mcp.server import get_db_config, mcp, create_db_config, create_parser
 
 
 class TestDatabaseConfiguration:
     """Test database configuration functionality."""
 
-    @patch.dict(os.environ, {
-        "MYSQL_HOST": "localhost",
-        "MYSQL_PORT": "3306",
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db",
-        "MYSQL_CHARSET": "utf8mb4",
-        "MYSQL_COLLATION": "utf8mb4_unicode_ci"
-    })
-    def test_get_db_config_with_all_vars(self):
-        """Test database configuration with all environment variables."""
-        config = get_db_config()
+    def test_create_db_config_with_all_args(self):
+        """Test database configuration with all command line arguments."""
+        parser = create_parser()
+        args = parser.parse_args([
+            "--host", "localhost",
+            "--port", "3306",
+            "--user", "test_user",
+            "--password", "test_password",
+            "--database", "test_db",
+            "--charset", "utf8mb4",
+            "--collation", "utf8mb4_unicode_ci"
+        ])
+        
+        config = create_db_config(args)
 
         assert config["host"] == "localhost"
         assert config["port"] == 3306
@@ -36,34 +38,46 @@ class TestDatabaseConfiguration:
         assert config["collation"] == "utf8mb4_unicode_ci"
         assert config["autocommit"] is True
 
-    @patch.dict(os.environ, {
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db",
-        "MYSQL_CERT": "/path/to/cert.pem"
-    })
-    def test_get_db_config_with_ssl_cert(self):
+    @patch("mysql_mcp.server.validate_ssl_file")
+    def test_create_db_config_with_ssl_cert(self, mock_validate):
         """Test database configuration with SSL certificate."""
-        config = get_db_config()
+        mock_validate.return_value = "/path/to/cert.pem"
+        
+        parser = create_parser()
+        args = parser.parse_args([
+            "--user", "test_user",
+            "--password", "test_password",
+            "--database", "test_db",
+            "--ssl-ca", "/path/to/cert.pem"
+        ])
+        
+        config = create_db_config(args)
         assert config["ssl_ca"] == "/path/to/cert.pem"
 
-    @patch.dict(os.environ, {}, clear=True)
-    def test_get_db_config_missing_required_vars(self):
-        """Test database configuration with missing required variables."""
-        with pytest.raises(ValueError, match="Missing required database configuration"):
-            get_db_config()
+    def test_create_db_config_missing_required_args(self):
+        """Test database configuration with missing required arguments."""
+        parser = create_parser()
+        with pytest.raises(SystemExit):  # argparse raises SystemExit for missing required args
+            parser.parse_args([])
 
-    @patch.dict(os.environ, {
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db"
-    }, clear=True)
-    def test_get_db_config_defaults(self):
+    def test_create_db_config_defaults(self):
         """Test database configuration with default values."""
-        config = get_db_config()
+        parser = create_parser()
+        args = parser.parse_args([
+            "--user", "test_user",
+            "--password", "test_password",
+            "--database", "test_db"
+        ])
+        
+        config = create_db_config(args)
         assert config["host"] == "localhost"
         assert config["port"] == 3306
         assert config["charset"] == "utf8mb4"
+
+    def test_get_db_config_not_initialized(self):
+        """Test that get_db_config raises error when not initialized."""
+        with pytest.raises(RuntimeError, match="Database configuration not initialized"):
+            get_db_config()
 
 
 class TestMCPIntegration:
@@ -234,11 +248,10 @@ class TestErrorHandling:
 
     def test_database_configuration_error_handling(self):
         """Test that configuration errors are properly handled."""
-        with patch.dict(os.environ, {}, clear=True):
-            with pytest.raises(ValueError) as exc_info:
-                get_db_config()
+        with pytest.raises(RuntimeError) as exc_info:
+            get_db_config()
 
-            assert "Missing required database configuration" in str(exc_info.value)
+        assert "Database configuration not initialized" in str(exc_info.value)
 
     @pytest.mark.asyncio
     @patch.dict(os.environ, {
