@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mysql-mcp-zag"
-version = "0.1.0"
+version = "0.1.1"
 description = "A modern MySQL Model Context Protocol (MCP) server built with FastMCP"
 readme = "README.md"
 license = { text = "MIT" }
@@ -28,10 +28,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/MichaelZag/mysql_mcp"
-Repository = "https://github.com/MichaelZag/mysql_mcp"
-Issues = "https://github.com/MichaelZag/mysql_mcp/issues"
-Documentation = "https://github.com/MichaelZag/mysql_mcp#readme"
+Homepage = "https://github.com/Michaelzag/mysql-mcp-zag"
+Repository = "https://github.com/Michaelzag/mysql-mcp-zag"
+Issues = "https://github.com/Michaelzag/mysql-mcp-zag/issues"
+Documentation = "https://github.com/Michaelzag/mysql-mcp-zag#readme"
 
 [project.scripts]
 mysql-mcp = "mysql_mcp.server:main"

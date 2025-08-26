@@ -25,8 +25,8 @@ uvx mysql-mcp-zag
 If you prefer to install from source:
 
 ```bash
-git clone https://github.com/MichaelZag/mysql_mcp.git
-cd mysql_mcp
+git clone https://github.com/Michaelzag/mysql-mcp-zag.git
+cd mysql-mcp-zag
 uv sync
 ```
 
