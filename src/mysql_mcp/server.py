@@ -42,10 +42,10 @@ def get_db_config() -> dict[str, Any]:
 
 def validate_table_name(table_name: str) -> bool:
     """Validate that a table name is safe to use in SQL queries.
-    
+
     Args:
         table_name: The table name to validate
-        
+
     Returns:
         True if the table name is valid, False otherwise
     """
@@ -53,7 +53,7 @@ def validate_table_name(table_name: str) -> bool:
     # They cannot start with a number and have length limits
     if not table_name or len(table_name) > 64:
         return False
-    
+
     # Check for valid MySQL identifier pattern
     pattern = r'^[a-zA-Z_$][a-zA-Z0-9_$]*$'
     return bool(re.match(pattern, table_name))
@@ -61,11 +61,11 @@ def validate_table_name(table_name: str) -> bool:
 
 def table_exists(table_name: str, config: dict[str, Any]) -> bool:
     """Check if a table exists in the database.
-    
+
     Args:
         table_name: The table name to check
         config: Database configuration
-        
+
     Returns:
         True if the table exists, False otherwise
     """
@@ -192,10 +192,13 @@ Returns:
     """
     # Validate table name to prevent SQL injection
     if not validate_table_name(table):
-        return f"Invalid table name: '{table}'. Table names must contain only letters, numbers, underscores, and dollar signs."
-    
+        return (
+            f"Invalid table name: '{table}'. Table names must contain only "
+            "letters, numbers, underscores, and dollar signs."
+        )
+
     config = get_db_config()
-    
+
     # Check if table exists before proceeding
     if not table_exists(table, config):
         return f"Table '{table}' not found in the database."
