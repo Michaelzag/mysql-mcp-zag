@@ -8,7 +8,9 @@ from fastmcp import Client
 from mcp.types import TextResourceContents
 from mysql.connector import Error
 
-from mysql_mcp.server import get_db_config, mcp, create_db_config, create_parser
+from mysql_mcp.server import get_db_config, mcp
+from mysql_mcp import create_db_config, create_parser
+import mysql_mcp.server as server_module
 
 
 class TestDatabaseConfiguration:
