@@ -1,6 +1,5 @@
 """Tests for MySQL MCP Server."""
 
-import os
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,9 +7,9 @@ from fastmcp import Client
 from mcp.types import TextResourceContents
 from mysql.connector import Error
 
-from mysql_mcp.server import get_db_config, mcp
-from mysql_mcp import create_db_config, create_parser
 import mysql_mcp.server as server_module
+from mysql_mcp import create_db_config, create_parser
+from mysql_mcp.server import get_db_config, mcp
 
 
 def setup_test_db_config():
@@ -39,7 +38,7 @@ class TestDatabaseConfiguration:
             "--charset", "utf8mb4",
             "--collation", "utf8mb4_unicode_ci"
         ])
-        
+
         config = create_db_config(args)
 
         assert config["host"] == "localhost"
@@ -55,7 +54,7 @@ class TestDatabaseConfiguration:
     def test_create_db_config_with_ssl_cert(self, mock_validate):
         """Test database configuration with SSL certificate."""
         mock_validate.return_value = "/path/to/cert.pem"
-        
+
         parser = create_parser()
         args = parser.parse_args([
             "--user", "test_user",
@@ -63,14 +62,15 @@ class TestDatabaseConfiguration:
             "--database", "test_db",
             "--ssl-ca", "/path/to/cert.pem"
         ])
-        
+
         config = create_db_config(args)
         assert config["ssl_ca"] == "/path/to/cert.pem"
 
     def test_create_db_config_missing_required_args(self):
         """Test database configuration with missing required arguments."""
         parser = create_parser()
-        with pytest.raises(SystemExit):  # argparse raises SystemExit for missing required args
+        # argparse raises SystemExit for missing required args
+        with pytest.raises(SystemExit):
             parser.parse_args([])
 
     def test_create_db_config_defaults(self):
@@ -81,7 +81,7 @@ class TestDatabaseConfiguration:
             "--password", "test_password",
             "--database", "test_db"
         ])
-        
+
         config = create_db_config(args)
         assert config["host"] == "localhost"
         assert config["port"] == 3306
@@ -89,7 +89,9 @@ class TestDatabaseConfiguration:
 
     def test_get_db_config_not_initialized(self):
         """Test that get_db_config raises error when not initialized."""
-        with pytest.raises(RuntimeError, match="Database configuration not initialized"):
+        with pytest.raises(
+            RuntimeError, match="Database configuration not initialized"
+        ):
             get_db_config()
 
 
@@ -127,7 +129,7 @@ class TestMCPIntegration:
         """Test executing SQL via MCP client."""
         # Setup database configuration
         setup_test_db_config()
-        
+
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
@@ -155,7 +157,7 @@ class TestMCPIntegration:
         """Test SHOW TABLES via MCP client."""
         # Setup database configuration
         setup_test_db_config()
-        
+
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
@@ -185,7 +187,7 @@ class TestMCPIntegration:
         """Test listing tables via MCP resources."""
         # Setup database configuration
         setup_test_db_config()
-        
+
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
@@ -215,7 +217,7 @@ class TestMCPIntegration:
         """Test describing a table via MCP resources."""
         # Setup database configuration
         setup_test_db_config()
-        
+
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
@@ -256,7 +258,7 @@ class TestErrorHandling:
         # Reset the global configuration to test uninitialized state
         original_config = server_module._db_config
         server_module._db_config = None
-        
+
         try:
             with pytest.raises(RuntimeError) as exc_info:
                 get_db_config()
@@ -272,7 +274,7 @@ class TestErrorHandling:
         """Test error handling in MCP tools."""
         # Setup database configuration
         setup_test_db_config()
-        
+
         mock_connect.side_effect = Error("Connection timeout")
 
         # This should not raise an exception, but return an error message
@@ -287,7 +289,7 @@ class TestErrorHandling:
         """Test error handling in MCP resources."""
         # Setup database configuration
         setup_test_db_config()
-        
+
         mock_connect.side_effect = Error("Access denied")
 
         # This should not raise an exception, but return an error message
@@ -307,7 +309,7 @@ class TestErrorHandling:
         """Test INSERT query via MCP client."""
         # Setup database configuration
         setup_test_db_config()
-        
+
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
