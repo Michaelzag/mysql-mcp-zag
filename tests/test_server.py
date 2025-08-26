@@ -13,6 +13,17 @@ from mysql_mcp import create_db_config, create_parser
 import mysql_mcp.server as server_module
 
 
+def setup_test_db_config():
+    """Helper function to set up database configuration for testing."""
+    parser = create_parser()
+    args = parser.parse_args([
+        "--user", "test_user",
+        "--password", "test_password",
+        "--database", "test_db"
+    ])
+    server_module._db_config = create_db_config(args)
+
+
 class TestDatabaseConfiguration:
     """Test database configuration functionality."""
 
@@ -111,14 +122,12 @@ class TestMCPIntegration:
             assert "mysql://tables" in resource_uris
 
     @pytest.mark.asyncio
-    @patch.dict(os.environ, {
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db"
-    })
     @patch("mysql_mcp.server.connect")
     async def test_execute_sql_via_mcp(self, mock_connect):
         """Test executing SQL via MCP client."""
+        # Setup database configuration
+        setup_test_db_config()
+        
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
@@ -141,14 +150,12 @@ class TestMCPIntegration:
             assert "5" in result.data
 
     @pytest.mark.asyncio
-    @patch.dict(os.environ, {
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db"
-    })
     @patch("mysql_mcp.server.connect")
     async def test_execute_sql_show_tables_via_mcp(self, mock_connect):
         """Test SHOW TABLES via MCP client."""
+        # Setup database configuration
+        setup_test_db_config()
+        
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
@@ -173,14 +180,12 @@ class TestMCPIntegration:
             assert "products" in lines[2]
 
     @pytest.mark.asyncio
-    @patch.dict(os.environ, {
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db"
-    })
     @patch("mysql_mcp.server.connect")
     async def test_list_tables_via_mcp(self, mock_connect):
         """Test listing tables via MCP resources."""
+        # Setup database configuration
+        setup_test_db_config()
+        
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
@@ -205,14 +210,12 @@ class TestMCPIntegration:
             assert "- products" in content
 
     @pytest.mark.asyncio
-    @patch.dict(os.environ, {
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db"
-    })
     @patch("mysql_mcp.server.connect")
     async def test_describe_table_via_mcp(self, mock_connect):
         """Test describing a table via MCP resources."""
+        # Setup database configuration
+        setup_test_db_config()
+        
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
@@ -250,20 +253,26 @@ class TestErrorHandling:
 
     def test_database_configuration_error_handling(self):
         """Test that configuration errors are properly handled."""
-        with pytest.raises(RuntimeError) as exc_info:
-            get_db_config()
+        # Reset the global configuration to test uninitialized state
+        original_config = server_module._db_config
+        server_module._db_config = None
+        
+        try:
+            with pytest.raises(RuntimeError) as exc_info:
+                get_db_config()
 
-        assert "Database configuration not initialized" in str(exc_info.value)
+            assert "Database configuration not initialized" in str(exc_info.value)
+        finally:
+            # Restore the original configuration
+            server_module._db_config = original_config
 
     @pytest.mark.asyncio
-    @patch.dict(os.environ, {
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db"
-    })
     @patch("mysql_mcp.server.connect")
     async def test_mcp_tool_error_handling(self, mock_connect):
         """Test error handling in MCP tools."""
+        # Setup database configuration
+        setup_test_db_config()
+        
         mock_connect.side_effect = Error("Connection timeout")
 
         # This should not raise an exception, but return an error message
@@ -273,14 +282,12 @@ class TestErrorHandling:
             assert "MySQL error" in result.data
 
     @pytest.mark.asyncio
-    @patch.dict(os.environ, {
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db"
-    })
     @patch("mysql_mcp.server.connect")
     async def test_mcp_resource_error_handling(self, mock_connect):
         """Test error handling in MCP resources."""
+        # Setup database configuration
+        setup_test_db_config()
+        
         mock_connect.side_effect = Error("Access denied")
 
         # This should not raise an exception, but return an error message
@@ -295,14 +302,12 @@ class TestErrorHandling:
             assert "MySQL error" in content
 
     @pytest.mark.asyncio
-    @patch.dict(os.environ, {
-        "MYSQL_USER": "test_user",
-        "MYSQL_PASSWORD": "test_password",
-        "MYSQL_DATABASE": "test_db"
-    })
     @patch("mysql_mcp.server.connect")
     async def test_insert_query_via_mcp(self, mock_connect):
         """Test INSERT query via MCP client."""
+        # Setup database configuration
+        setup_test_db_config()
+        
         # Setup mock
         mock_cursor = MagicMock()
         mock_connection = MagicMock()
