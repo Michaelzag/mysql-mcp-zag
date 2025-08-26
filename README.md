@@ -32,18 +32,38 @@ uv sync
 
 ## Configuration
 
-Set environment variables:
+The MySQL MCP server accepts the following command line arguments:
+
+### Required Arguments
+- `--user`: MySQL username
+- `--password`: MySQL password
+- `--database`: MySQL database name
+
+### Optional Arguments
+- `--host`: MySQL server host (default: localhost)
+- `--port`: MySQL server port (default: 3306)
+- `--ssl-ca`: Path to SSL CA certificate file
+- `--ssl-cert`: Path to SSL client certificate file
+- `--ssl-key`: Path to SSL client private key file
+- `--ssl-disabled`: Disable SSL connection
+- `--charset`: Character set (default: utf8mb4)
+- `--collation`: Collation (default: utf8mb4_unicode_ci)
+- `--sql-mode`: SQL mode (default: TRADITIONAL)
+
+### SSL Configuration Examples
 
 ```bash
-export MYSQL_HOST=localhost
-export MYSQL_PORT=3306
-export MYSQL_USER=your_user
-export MYSQL_PASSWORD=your_password
-export MYSQL_DATABASE=your_database
+# Basic SSL with CA certificate
+uvx mysql-mcp-zag --user admin --password secret --database mydb --ssl-ca /path/to/ca.pem
 
-# Optional
-export MYSQL_CERT=/path/to/cert.crt  # Supports .crt, .pem, and other SSL certificate formats
-export MYSQL_CHARSET=utf8mb4
+# Full SSL with client certificates
+uvx mysql-mcp-zag --user admin --password secret --database mydb \
+  --ssl-ca /path/to/ca.pem \
+  --ssl-cert /path/to/client-cert.pem \
+  --ssl-key /path/to/client-key.pem
+
+# Disable SSL entirely
+uvx mysql-mcp-zag --user admin --password secret --database mydb --ssl-disabled
 ```
 
 ## Usage
@@ -59,13 +79,13 @@ Configure in your MCP client (e.g., Claude Desktop):
   "mcpServers": {
     "mysql": {
       "command": "uvx",
-      "args": ["mysql-mcp-zag"],
-      "env": {
-        "MYSQL_HOST": "localhost",
-        "MYSQL_USER": "user",
-        "MYSQL_PASSWORD": "password",
-        "MYSQL_DATABASE": "database"
-      }
+      "args": [
+        "mysql-mcp-zag",
+        "--host", "localhost",
+        "--user", "your_user",
+        "--password", "your_password",
+        "--database", "your_database"
+      ]
     }
   }
 }
@@ -78,13 +98,14 @@ Configure in your MCP client (e.g., Claude Desktop):
   "mcpServers": {
     "mysql": {
       "command": "uv",
-      "args": ["--directory", "/path/to/mysql-mcp", "run", "mysql-mcp"],
-      "env": {
-        "MYSQL_HOST": "localhost",
-        "MYSQL_USER": "user",
-        "MYSQL_PASSWORD": "password",
-        "MYSQL_DATABASE": "database"
-      }
+      "args": [
+        "--directory", "/path/to/mysql-mcp",
+        "run", "mysql-mcp",
+        "--host", "localhost",
+        "--user", "your_user",
+        "--password", "your_password",
+        "--database", "your_database"
+      ]
     }
   }
 }
@@ -95,13 +116,13 @@ Configure in your MCP client (e.g., Claude Desktop):
 #### Using uvx
 
 ```bash
-uvx mysql-mcp-zag
+uvx mysql-mcp-zag --user your_user --password your_password --database your_database
 ```
 
 #### Using local installation
 
 ```bash
-uv run mysql-mcp
+uv run mysql-mcp --user your_user --password your_password --database your_database
 ```
 
 ## Available Tools
@@ -125,7 +146,7 @@ uv run black src tests
 uv run mypy src
 
 # Run server locally
-uv run mysql-mcp
+uv run mysql-mcp --user your_user --password your_password --database your_database
 ```
 
 ## Requirements
